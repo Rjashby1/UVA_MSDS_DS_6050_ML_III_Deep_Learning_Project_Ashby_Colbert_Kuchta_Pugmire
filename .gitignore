@@ -1,0 +1,15 @@
+# Local datasets (keep repo light)
+DATA/raw/
+DATA/isic2019/
+DATA/milk10k/
+
+# If you prefer to keep CSVs tracked, remove the folder ignores above
+# and use only the image ignores below instead.
+
+# Belt + suspenders: common image extensions anywhere under DATA
+DATA/**/*.jpg
+DATA/**/*.jpeg
+DATA/**/*.png
+DATA/**/*.tif
+DATA/**/*.tiff
+DATA/**/*.bmp
