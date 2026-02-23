@@ -1,1 +1,83 @@
+# Public dataset links (data NOT stored in this GitHub repo)
+# Project datasets:
+#  - ISIC 2019 Challenge Dataset
+#  - MILK10k (ISIC Archive, 2025)
+#
+# Owner/host: ISIC Challenge / ISIC Archive (public URLs)
+# License: CC-BY-NC (see each dataset landing page)
+#
+# Folder convention (LOCAL ONLY; ignored by git):
+#   DATA/raw/...         downloaded archives/csvs
+#   DATA/isic2019/...    extracted images + csvs
+#   DATA/milk10k/...     extracted images + csvs
 
+============================================================
+DATASET A: ISIC 2019 Challenge Dataset
+Landing page:
+- https://challenge.isic-archive.com/data/#2019
+
+Downloads (official direct links):
+Training images (zip):
+- https://isic-archive.s3.amazonaws.com/challenges/2019/ISIC_2019_Training_Input.zip
+Training metadata (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/2019/ISIC_2019_Training_Metadata.csv
+Training ground truth (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/2019/ISIC_2019_Training_GroundTruth.csv
+
+Test images (zip):
+- https://isic-archive.s3.amazonaws.com/challenges/2019/ISIC_2019_Test_Input.zip
+Test metadata (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/2019/ISIC_2019_Test_Metadata.csv
+Test ground truth (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/2019/ISIC_2019_Test_GroundTruth.csv
+
+Expected local paths (NOT tracked by git):
+- DATA/raw/isic2019/ISIC_2019_Training_Input.zip
+- DATA/raw/isic2019/ISIC_2019_Test_Input.zip
+- DATA/isic2019/train/images/   (unzipped)
+- DATA/isic2019/test/images/    (unzipped)
+- DATA/isic2019/train/ISIC_2019_Training_Metadata.csv
+- DATA/isic2019/train/ISIC_2019_Training_GroundTruth.csv
+- DATA/isic2019/test/ISIC_2019_Test_Metadata.csv
+- DATA/isic2019/test/ISIC_2019_Test_GroundTruth.csv
+
+Citation notes:
+- Use the “Citing 2019 datasets” section on the landing page for the official citation language.
+
+============================================================
+DATASET B: MILK10k (ISIC Archive, 2025)
+Landing page:
+- https://challenge.isic-archive.com/data/#milk10k
+
+Downloads (official direct links):
+Training images (zip):
+- https://isic-archive.s3.amazonaws.com/challenges/milk10k/MILK10k_Training_Input.zip
+Training metadata (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/milk10k/MILK10k_Training_Metadata.csv
+Training supplement (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/milk10k/MILK10k_Training_Supplement.csv
+Training ground truth (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/milk10k/MILK10k_Training_GroundTruth.csv
+
+Test images (zip):
+- https://isic-archive.s3.amazonaws.com/challenges/milk10k/MILK10k_Test_Input.zip
+Test metadata (csv):
+- https://isic-archive.s3.amazonaws.com/challenges/milk10k/MILK10k_Test_Metadata.csv
+
+Expected local paths (NOT tracked by git):
+- DATA/raw/milk10k/MILK10k_Training_Input.zip
+- DATA/raw/milk10k/MILK10k_Test_Input.zip
+- DATA/milk10k/train/images/    (unzipped)
+- DATA/milk10k/test/images/     (unzipped)
+- DATA/milk10k/train/MILK10k_Training_Metadata.csv
+- DATA/milk10k/train/MILK10k_Training_Supplement.csv
+- DATA/milk10k/train/MILK10k_Training_GroundTruth.csv
+- DATA/milk10k/test/MILK10k_Test_Metadata.csv
+
+Citation (from MILK10k page):
+- MILK study team. MILK10k. ISIC Archive, 2025, doi:10.34970/648456.
+
+============================================================
+IMPORTANT
+- Do NOT commit the raw zips or extracted images to git/GitHub.
+- If any links change, update this file and the download script.
