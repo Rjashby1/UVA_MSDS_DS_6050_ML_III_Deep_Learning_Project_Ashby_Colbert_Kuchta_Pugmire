@@ -22,7 +22,7 @@ We benchmark three CNN families:
 
 ## Datasets (Public, not stored in this repo)
 
-We use two ISIC-hosted public datasets:
+We use two International Skin Imaging Collaboration (ISIC) - hosted public datasets:
 
 - **ISIC 2019**: primary training + internal validation dataset  
 - **MILK10k (ISIC 2025)**: external validation dataset (out-of-distribution generalization)
