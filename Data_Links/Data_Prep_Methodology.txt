@@ -1,0 +1,275 @@
+# Data Preprocessing & Pipeline Methodology
+### DS 6050 — Skin Lesion Classification Project
+**Ashby · Colbert · Kuchta · Pugmire**
+
+---
+
+## Overview
+
+This document defines our **one-time preprocessing pipeline** (`data_prep.py`) and the reasoning behind every design decision. The core philosophy: **run the pipeline once, save the results, and never reprocess 25,000 images again.** All training scripts load from `DATA/processed/`.
+
+---
+
+## 1. Data Architecture & File Roles
+
+```
+DATA/
+├── raw/                        ← original .zip archives (never touch)
+│   ├── isic2019/
+│   └── milk10k/
+├── isic2019/                   ← unzipped by download_data.py
+│   ├── train/images/ISIC_2019_Training_Input/   ← ~25,331 .jpg files (used for train/val)
+│   └── test/images/ISIC_2019_Test_Input/        ← official ISIC 2019 test set (used as internal test)
+├── milk10k/                    ← unzipped by download_data.py
+│   ├── train/images/MILK10k_Training_Input/     ← Nested: IL_XXXXXXX/img_A.jpg + img_B.jpg
+│   └── test/images/MILK10k_Test_Input/          ← NOT USED — no ground truth labels
+└── processed/                  ← OUTPUT of data_prep.py (load from here)
+    ├── isic2019/
+    │   ├── train.csv           ← ~85% of ISIC 2019 training folder, stratified
+    │   ├── val.csv             ← ~15% of ISIC 2019 training folder, stratified
+    │   └── test.csv            ← official ISIC 2019 test set (independently curated by ISIC)
+    ├── milk10k/
+    │   └── external_val.csv    ← STRICTLY external validation cohort; never touches training
+    ├── metadata_scaler.pkl     ← fitted StandardScaler (age) — fit on train only
+    ├── metadata_ohe.pkl        ← fitted OneHotEncoder (sex, site) — fit on train only
+    └── class_weights.json      ← inverse-frequency weights per class
+```
+
+---
+
+## 2. Dataset Roles & the Silo Rule
+
+| Dataset | Role | Justification |
+|---|---|---|
+| ISIC 2019 training folder (~25k) | Train + Val | Primary source; has ground truth labels |
+| ISIC 2019 official test set | Internal Test | Independently curated by ISIC; cleaner separation than carving off our own test split |
+| MILK10K training folder (~10k) | **External Validation Only** (`external_val.csv`) | Never seen during training; tests true generalization across clinical variance (skin tone, multi-modal) |
+| MILK10K test folder | Not used | No ground truth labels available |
+
+> **The Silo Rule:** No MILK10K image, label, or metadata statistic ever influences model training or hyperparameter selection. Encoders are fit on ISIC 2019 training data only, then *applied* to MILK10K.
+
+---
+
+## 3. ISIC 2019 Image Path Resolution
+
+**Problem:** After unzipping, images land in a subfolder called `ISIC_2019_Training_Input/` inside `images/`. Same pattern for the test set (`ISIC_2019_Test_Input/`).
+
+**Solution:** `data_prep.py` points directly to the correct subfolder path. If not found at the direct path, it falls back to `rglob()` to handle any edge-case variation from unusual zip extraction. Paths are stored as **relative paths from the project root** so the CSV works on any machine — Windows, Mac, or Rivanna/Linux.
+
+---
+
+## 4. MILK10K Image Path Resolution
+
+**Problem:** MILK10K has a fundamentally different structure. Each sample lives in its own folder (named by a sample ID like `IL_0006205`), containing **two images**:
+- One dermoscopic image
+- One clinical close-up photograph
+
+**Solution:** `data_prep.py` filters the metadata to **dermoscopic rows only** before merging, so we get one clean row per lesion. Both image paths (`image_path_derm`, `image_path_clinic`) are recorded per sample for flexibility:
+- **Phase 1–4 ablations:** Use dermoscopic only (matching ISIC 2019)
+- **Future work:** Multi-modal input using both images
+
+---
+
+## 5. Ground Truth Label Extraction
+
+Both datasets use **one-hot encoding** across diagnosis columns. `data_prep.py` converts this to a single `label` string using `idxmax(axis=1)` — selecting the column name of the `1.0` value per row.
+
+ISIC 2019 classes: `MEL`, `NV`, `BCC`, `BKL`, `AK`, `SCC`, `VASC`, `DF`
+
+MILK10K classes (after exclusions): `MEL`, `NV`, `BCC`, `BKL`, `AKIEC`, `SCCKA`, `VASC`, `DF`, `INF`
+
+MILK10K excluded classes: `BEN_OTH`, `MAL_OTH` — dropped entirely because they have no equivalent in the ISIC 2019 training data and the model would have no basis for predicting them.
+
+For the official ISIC 2019 test set, competition-specific columns (`UNK`, `score_weight`, `validation_weight`) are dropped before label extraction.
+
+---
+
+## 6. Malignant vs. Benign Flag
+
+In addition to the granular label, each row has an `is_malignant` column (1 = malignant, 0 = benign). This is useful for computing clinical metrics like "what percentage of actual malignancies did we catch?" — arguably the most important real-world measure.
+
+| Dataset | Malignant Labels |
+|---|---|
+| ISIC 2019 | `MEL`, `BCC`, `SCC`, `AK` |
+| MILK10K | `MEL`, `BCC`, `SCC`, `AK`, `SCCKA` |
+
+---
+
+## 7. Train / Val / Internal Test Split
+
+| Split | Source | Fraction | Purpose |
+|---|---|---|---|
+| Train | ISIC 2019 training folder | ~85% | Model training |
+| Val | ISIC 2019 training folder | ~15% | Hyperparameter tuning, early stopping |
+| Internal Test | Official ISIC 2019 test set | Independent | One-time final evaluation before external validation |
+| External Val | MILK10K training folder | All labeled samples | True out-of-distribution generalization test |
+
+The train/val split uses stratification on `label` to preserve class distribution in both splits — critical given the severe imbalance in ISIC 2019.
+
+```python
+train, val = train_test_split(df, test_size=0.15, stratify=df["label"], random_state=42)
+```
+
+**Random seed is fixed at 42** across all splits for full reproducibility.
+
+**Known limitation:** Patient-level leakage cannot be fully prevented as ISIC 2019 does not provide patient IDs. `lesion_id` is retained in the CSV for traceability. This is a documented limitation in the dermatology AI literature.
+
+---
+
+## 8. Metadata Preprocessing
+
+Our architecture fuses patient metadata through a late-fusion MLP branch. The three metadata fields available are:
+
+| Field | Column Name | Type | Strategy | Rationale |
+|---|---|---|---|---|
+| Patient age | `age_approx` | Numerical | `StandardScaler` (mean=0, std=1) | Raw age (0–90) would dominate pixel values (0–1) by ~90x without normalization |
+| Patient sex | `sex` | Categorical | `OneHotEncoder` → `sex_female`, `sex_male`, `sex_unknown` | No ordinal relationship between categories |
+| Body site | `anatom_site_general` | Categorical | `OneHotEncoder` → one column per site | Same reasoning; ~6 distinct anatomical site values |
+
+Note: ISIC 2019 calls the body site column `anatom_site_general`. MILK10K calls it `site`. Both are renamed to `anatom_site_general` during preprocessing so they are treated identically by the encoder.
+
+### Critical: Fit-on-Train, Transform-All
+
+```
+scaler.fit(train["age_approx"])      ← mean/std computed from training set only
+scaler.transform(val["age_approx"])  ← scaled using TRAIN statistics
+scaler.transform(test["age_approx"])
+scaler.transform(milk["age_approx"])
+```
+
+**Why this matters:** If we fit the scaler on the full dataset (including val/test), test set statistics leak into training. The model could indirectly learn the distribution of test ages. We avoid this entirely by fitting only on training data and persisting the fitted objects to `.pkl` files.
+
+### Handling Missing Values
+
+Missing `age_approx` values are filled with the **training set median** (not the global median). Missing categorical values are filled with `"unknown"` before OHE — the encoder is configured with `handle_unknown="ignore"` so unseen categories at inference time produce an all-zero vector rather than crashing.
+
+---
+
+## 9. Class Weights for Imbalanced Training
+
+ISIC 2019 has extreme class imbalance. Melanocytic nevi (`NV`) represents ~51% of samples, while rare classes like `DF` or `VASC` have only ~200 samples each.
+
+**Formula:**
+```
+weight[c] = N_total / (N_classes × count[c])
+```
+
+This means rare classes get a much higher loss penalty than the majority class, preventing the model from collapsing into always predicting the most common class. These weights will be plugged into `torch.nn.CrossEntropyLoss(weight=...)` when the training script is written.
+
+Weights are saved to `class_weights.json` so every team member uses identical values.
+
+---
+
+## 10. What data_prep.py Does NOT Do
+
+The following are intentionally left to training-time transforms (not baked into the preprocessed CSVs):
+
+- Image resizing / center-cropping
+- Pixel normalization (mean/std subtraction)
+- Any augmentation (geometric, colorimetric, slicing)
+
+**Rationale:** These operations need to vary across our ablation phases. Baking them into the CSVs would mean re-running the pipeline for each experiment. Instead, the CSVs store raw relative image paths, and each training script applies its own `torchvision.transforms` pipeline at load time.
+
+The agreed Phase 1 baseline transform pipeline (to be implemented in `train.py`) is:
+```python
+transforms.Resize(256),                           # shrink so shortest edge = 256px
+transforms.CenterCrop(224),                       # cut center 224x224 square
+transforms.ToTensor(),                            # convert pixels to tensor (0-255 → 0.0-1.0)
+transforms.Normalize(mean=[0.485, 0.456, 0.406],  # normalize using ImageNet statistics
+                     std=[0.229, 0.224, 0.225])   # to match pretrained model expectations
+```
+
+---
+
+## 11. How Training Scripts Should Use These Files
+
+```python
+import pandas as pd, json, pickle
+from pathlib import Path
+
+ROOT      = Path(__file__).resolve().parents[1]
+PROCESSED = ROOT / "DATA" / "processed"
+
+# Load splits
+train_df = pd.read_csv(PROCESSED / "isic2019/train.csv")
+val_df   = pd.read_csv(PROCESSED / "isic2019/val.csv")
+test_df  = pd.read_csv(PROCESSED / "isic2019/test.csv")
+milk_df  = pd.read_csv(PROCESSED / "milk10k/external_val.csv")  # NEVER used for training
+
+# Image paths in CSVs are relative — resolve to absolute at load time
+# full_path = ROOT / row["image_path"]
+
+# Load pre-fitted encoders (do NOT re-fit these)
+with open(PROCESSED / "metadata_scaler.pkl", "rb") as f:
+    scaler = pickle.load(f)
+with open(PROCESSED / "metadata_ohe.pkl", "rb") as f:
+    ohe = pickle.load(f)
+
+# Load class weights → pass to loss function when writing train.py
+with open(PROCESSED / "class_weights.json") as f:
+    class_weights = json.load(f)
+
+# The metadata feature vector for the MLP branch is already in the CSV:
+# age_scaled, sex_female, sex_male, sex_unknown, anatom_site_general_X, ...
+META_COLS = [c for c in train_df.columns if c.startswith("sex_")
+             or c.startswith("anatom_site")
+             or c == "age_scaled"]
+```
+
+---
+
+## 12. Ablation Phase Summary
+
+Each ablation phase is controlled **entirely in the training script's transform pipeline**, not in `data_prep.py`. The processed CSVs remain constant across all experiments.
+
+| Phase | Transform Applied | What It Tests |
+|---|---|---|
+| Phase 1 | Resize → CenterCrop → ToTensor → Normalize | Baseline (no augmentation) |
+| Phase 2 | + RandomAffine (rotation ±90°, shear), applied before CenterCrop | Spatial invariance |
+| Phase 3 | + ColorJitter (brightness, contrast, hue, saturation) | Illumination robustness |
+| Phase 4 | + RandomResizedCrop, CutMix | Anti-overfitting to localized features |
+
+---
+
+## 13. Running Order
+
+```bash
+# 1. Download everything (run once)
+python Scripts/download_data.py
+
+# 2. Preprocess (run once)
+python Code/data_prep.py
+
+# 3. Train (run many times with different configs — not yet written)
+python Code/train.py --backbone resnet --phase 1
+python Code/train.py --backbone efficientnet --phase 2
+# etc.
+```
+
+---
+
+*Last updated: March 2026 | DS 6050 SP 2026*
+
+
+## Training Notes Based of Feedback:
+
+Crop/Resize size — recommend 224x224
+
+Phase 1 Transformation Current Idea:
+
+transforms.Resize(256), # shrinks image so shortest edge is 256px, preserves aspect ratio
+
+# include RandomAffine.. look into this. Ensures our target is actually centered before we crop. Preserves points/lines/'things'
+
+transforms.CenterCrop(224), # standard for ResNet, EfficientNet, DenseNet. 
+
+
+transforms.ToTensor(), # convert to tensor
+
+transforms.Normalize(mean=[0.485, 0.456, 0.406], # 
+                     std=[0.229, 0.224, 0.225])
+
+
+---
+
+*Last updated: March 2026 | DS 6050 SP 2026*
