@@ -13,3 +13,7 @@ DATA/**/*.png
 DATA/**/*.tif
 DATA/**/*.tiff
 DATA/**/*.bmp
+
+# No .html files of notebook runs
+DATA/**/*.html
+Code/**/*.html
