@@ -1,0 +1,23 @@
+name: ds6050-skin
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - jupyterlab
+  - notebook
+  - ipykernel
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - pillow
+  - joblib
+  - tqdm
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pip:
+      - kaggle

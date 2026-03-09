@@ -1,0 +1,4 @@
+,train_missing_pct,val_missing_pct,test_missing_pct,milk_missing_pct
+age_approx,0.0173,0.0168,0.0396,0.0037
+sex,0.0,0.0,0.0,0.0
+anatom_site_general,0.0,0.0,0.0,0.0
