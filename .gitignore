@@ -17,3 +17,11 @@ DATA/**/*.bmp
 # No .html files of notebook runs
 DATA/**/*.html
 Code/**/*.html
+
+# checkpoints / model weights
+outputs/checkpoints/
+*.pt
+*.pth
+# notebook exports
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
