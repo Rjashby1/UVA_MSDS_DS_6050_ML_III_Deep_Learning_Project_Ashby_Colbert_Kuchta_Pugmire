@@ -1,0 +1,4 @@
+backbone,best_val_macro_auc,best_val_balanced_accuracy,final_val_loss,epochs,checkpoint
+efficientnet_b0,0.9608290630438265,0.753841290413137,0.8117641800328305,5,/sfs/gpfs/tardis/home/gsr3qz/UVA_MSDS_DS_6050_ML_III_Deep_Learning_Project_Ashby_Colbert_Kuchta_Pugmire/outputs/checkpoints/efficientnet_b0_phase1_best.pt
+resnet50,0.9554345569954275,0.7405731100732673,1.01345709104287,5,/sfs/gpfs/tardis/home/gsr3qz/UVA_MSDS_DS_6050_ML_III_Deep_Learning_Project_Ashby_Colbert_Kuchta_Pugmire/outputs/checkpoints/resnet50_phase1_best.pt
+densenet121,0.9528905787534059,0.7396674993935262,0.9811607097324572,5,/sfs/gpfs/tardis/home/gsr3qz/UVA_MSDS_DS_6050_ML_III_Deep_Learning_Project_Ashby_Colbert_Kuchta_Pugmire/outputs/checkpoints/densenet121_phase1_best.pt
