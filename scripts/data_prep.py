@@ -7,7 +7,7 @@ Run ONCE after download_data.py. Outputs go to DATA/processed/.
 Training scripts then load from processed/ -- never reprocess 25k images again.
 
 Usage:
-    python Code/data_prep.py
+    python scripts/data_prep.py
 
 Outputs:
     DATA/processed/isic2019/train.csv           <- ~85% of ISIC 2019 train folder, stratified
