@@ -41,8 +41,9 @@ class EfficientNetB0(nn.Module):
                  use_metadata=False, metadata_dim=METADATA_DIM):
         super().__init__()
 
+        # Stores the toggle as an instance variable so forward() can check it later
         self.use_metadata = use_metadata
-
+        
         # load pretrained backbone
         weights = EfficientNet_B0_Weights.DEFAULT if pretrained else None
         model = models.efficientnet_b0(weights=weights)
@@ -97,6 +98,7 @@ class EfficientNetB0(nn.Module):
         # "was this model built to USE metadata?" yes, proceed
             if metadata is None:
             # "did the caller forget to pass metadata?" use zeros as fallback
+            # concatenate with metadata. Late Fusion.
                 metadata = torch.zeros(images.size(0), METADATA_DIM, device=images.device)
             x = torch.cat([x, self.meta_mlp(metadata)], dim=1)
 
@@ -122,3 +124,46 @@ def build_efficientnet_b0(
 
 
 
+# 
+#  PSEUDOCODE
+# 
+#
+# WITHOUT METADATA (Phases 1-4):
+# 
+# Image (224x224x3)
+#     ↓
+# EfficientNet Backbone (frozen layers 0-6)
+#     ↓
+# Fine-tuned layers (features[7], features[8])
+#     ↓
+# Global Average Pooling
+#     ↓
+# 1280-dim image vector
+#     ↓
+# Dropout(0.2) → Linear(1280 → 8)
+#     ↓
+# 8 class scores
+#
+################################
+#
+# WITH METADATA (Phase 5):
+# 
+# Image (224x224x3)          Patient Record
+#     ↓                      (age, sex, site)
+# EfficientNet Backbone           ↓
+#     ↓                      Linear(13 → 32)
+# Fine-tuned layers               ↓
+#     ↓                        ReLU
+# Global Average Pooling          ↓
+#     ↓                      Dropout(0.2)
+# 1280-dim vector            Linear(32 → 16)
+#     ↓                           ↓
+#     └──────── CONCATENATE ───────┘
+#                   ↓
+#            1296-dim vector
+#                   ↓
+#        Dropout(0.2) → Linear(1296 → 8)
+#                   ↓
+#            8 class scores
+#
+# 
