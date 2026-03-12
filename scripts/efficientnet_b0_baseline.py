@@ -7,28 +7,118 @@ Usage:
 
 from __future__ import annotations
 
+import torch
 import torch.nn as nn
 from torchvision import models
+# gives us best available ImageNet weights for this architecture
+from torchvision.models import EfficientNet_B0_Weights
+
+# this will be constant across all experiments. # of metadata columns
+METADATA_DIM = 13
+ 
+class MetadataMLP(nn.Module):
+    """2-layer MLP for patient metadata. using dropout."""
+ 
+    def __init__(self, input_dim=METADATA_DIM):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, 32),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.2),
+            nn.Linear(32, 16),
+            nn.ReLU(inplace=True),
+        )
+ 
+ 
+    def forward(self, x):
+        return self.mlp(x)
+
+
+
+class EfficientNetB0(nn.Module):
+
+    def __init__(self, num_classes, pretrained=True, freeze_backbone=False,
+                 use_metadata=False, metadata_dim=METADATA_DIM):
+        super().__init__()
+
+        self.use_metadata = use_metadata
+
+        # load pretrained backbone
+        weights = EfficientNet_B0_Weights.DEFAULT if pretrained else None
+        model = models.efficientnet_b0(weights=weights)
+
+        #the ciritical parts of efficient net:
+        #  features(stem+7 MBCONVs + projection)
+        #  avgpool - global average pooling
+        #  classifier. we don't take theirs because we want to replace it with our own head.
+        self.features = model.features
+        self.avgpool  = model.avgpool
+        # fixed architecture - each image becomes 1280 feature maps.
+        cnn_out_dim   = 1280
+
+        # freeze early layers, keep last block + projection head trainable
+        if freeze_backbone:
+            for param in self.features.parameters():
+                param.requires_grad = False
+            # last MBConv block
+            for param in self.features[7].parameters():
+                param.requires_grad = True
+            # 1x1 projection to 1280 feature maps
+            for param in self.features[8].parameters():
+                param.requires_grad = True
+
+        # metadata branch
+        #  if use_metadata is true. meta_mlp = 16 ( the output size of the last layer of Metadata MLP)
+        #  and the classifier takes 1296 inputs
+        if use_metadata:
+            self.meta_mlp   = MetadataMLP(input_dim=metadata_dim)
+            classifier_in   = cnn_out_dim + 16
+        # if use_metadata is false. meta_mlp = None and the classifier takes 1280 inputs
+        else:
+            self.meta_mlp   = None
+            classifier_in   = cnn_out_dim
+        # the output head
+        # no softmax here - CrossEntropLoss does it in the training loop. 
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(classifier_in, num_classes),
+        )
+
+    def forward(self, images, metadata=None):
+        # feature extraction
+        x = self.features(images)
+        # global average pooling
+        x = self.avgpool(x)
+        # flatten. # the result of global pooling is a box of size 1x1x1280. flattening it to a vector of size 1280
+        x = torch.flatten(x, 1)
+
+        # LATE FUSION
+        if self.use_metadata and self.meta_mlp is not None:
+        # "was this model built to USE metadata?" yes, proceed
+            if metadata is None:
+            # "did the caller forget to pass metadata?" use zeros as fallback
+                metadata = torch.zeros(images.size(0), METADATA_DIM, device=images.device)
+            x = torch.cat([x, self.meta_mlp(metadata)], dim=1)
+
+        return self.classifier(x)
 
 
 def build_efficientnet_b0(
     num_classes: int,
     pretrained: bool = True,
     freeze_backbone: bool = False,
+    use_metadata: bool = False,
+    metadata_dim: int = METADATA_DIM,
 ) -> nn.Module:
     """Build an EfficientNet-B0 classifier with a project-specific output head."""
-    weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
-    model = models.efficientnet_b0(weights=weights)
-
-    if freeze_backbone:
-        for param in model.parameters():
-            param.requires_grad = False
-
-    in_features = model.classifier[1].in_features
-    model.classifier[1] = nn.Linear(in_features, num_classes)
-
-    if freeze_backbone:
-        for param in model.classifier[1].parameters():
-            param.requires_grad = True
-
+    model = EfficientNetB0(
+        num_classes=num_classes,
+        pretrained=pretrained,
+        freeze_backbone=freeze_backbone,
+        use_metadata=use_metadata,
+        metadata_dim=metadata_dim,
+    )
     return model
+
+
+
