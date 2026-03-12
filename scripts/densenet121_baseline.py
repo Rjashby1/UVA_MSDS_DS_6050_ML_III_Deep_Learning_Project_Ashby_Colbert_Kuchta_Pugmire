@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import torch
@@ -69,14 +70,14 @@ class DenseNet121Classifier(nn.Module):
 
         cnn_out = backbone.classifier.in_features  # 1024
 
-        # ── metadata branch
+        # metadata branch
         if use_metadata:
             self.meta_mlp = MetadataMLP(input_dim=metadata_dim)
             combined_dim = cnn_out + 16  # 1024 + 16
         else:
             combined_dim = cnn_out
 
-        # ── classification head 
+        #classification head 
         self.classifier = nn.Linear(combined_dim, num_classes)
 
         if freeze_backbone:
