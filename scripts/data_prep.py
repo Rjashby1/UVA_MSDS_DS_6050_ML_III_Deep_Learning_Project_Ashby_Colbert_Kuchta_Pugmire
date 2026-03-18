@@ -37,9 +37,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
-# ─────────────────────────────────────────────
+# 
 # PATHS
-# ─────────────────────────────────────────────
+
 ROOT      = Path(__file__).resolve().parents[1]
 DATA      = ROOT / "DATA"
 PROCESSED = DATA / "processed"
@@ -60,9 +60,10 @@ MILK_TRAIN_IMG  = DATA / "milk10k" / "train" / "images" / "MILK10k_Training_Inpu
 MILK_TRAIN_META = DATA / "milk10k" / "train" / "MILK10k_Training_Metadata.csv"
 MILK_TRAIN_GT   = DATA / "milk10k" / "train" / "MILK10k_Training_GroundTruth.csv"
 
-# ─────────────────────────────────────────────
+#
 # CONSTANTS
-# ─────────────────────────────────────────────
+
+# Hyperparameters
 RANDOM_SEED = 42
 VAL_FRAC    = 0.15   # 15% of ISIC 2019 training folder → internal validation
 
@@ -80,10 +81,10 @@ MILK_MALIGNANT = {"MEL", "BCC", "SCC", "AK", "SCCKA"}
 MILK_EXCLUDE = {"BEN_OTH", "MAL_OTH"}
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # STEP 1 — Build ISIC 2019 master DataFrame from training folder
 #   Merge ground-truth labels + metadata, resolve image paths
-# ══════════════════════════════════════════════════════════════════════════════
+
 def build_isic2019_df() -> pd.DataFrame:
     """
     Loads the ISIC 2019 training folder.
@@ -127,11 +128,11 @@ def build_isic2019_df() -> pd.DataFrame:
     return df
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # STEP 2 — Stratified Train / Val split
 #   85% train, 15% val — both from the ISIC 2019 training folder.
 #   Internal test set comes from the official ISIC 2019 test set (Step 2b).
-# ══════════════════════════════════════════════════════════════════════════════
+
 def split_isic2019(df: pd.DataFrame):
     """
     Returns (train_df, val_df)
@@ -154,12 +155,12 @@ def split_isic2019(df: pd.DataFrame):
     return train.reset_index(drop=True), val.reset_index(drop=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # STEP 2b — Load official ISIC 2019 test set as our internal test split
 #   This is independently curated by ISIC — a cleaner separation than
 #   carving off a portion of the training folder ourselves.
 #   Competition-specific columns (UNK, score_weight, validation_weight) are dropped.
-# ══════════════════════════════════════════════════════════════════════════════
+
 def build_isic2019_test_df() -> pd.DataFrame:
     """
     Loads the official ISIC 2019 test set.
@@ -203,14 +204,14 @@ def build_isic2019_test_df() -> pd.DataFrame:
     return df
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # STEP 3 — Fit metadata encoders ON TRAINING SET ONLY, then transform all splits
 #
 #   WHY this order matters:
 #     - StandardScaler / OneHotEncoder must be fit only on TRAIN data.
 #     - Val, test, and MILK10K data are transformed using TRAIN-fitted encoders.
 #     - This prevents data leakage (test statistics bleeding into training).
-# ══════════════════════════════════════════════════════════════════════════════
+#
 def fit_and_encode_metadata(train_df, val_df, test_df, milk_df=None):
     """
     Fits encoders on train_df, transforms all splits.
@@ -223,7 +224,7 @@ def fit_and_encode_metadata(train_df, val_df, test_df, milk_df=None):
     if milk_df is not None:
         all_dfs["milk"] = milk_df
 
-    # ── Numerical: StandardScaler for age ─────────────────────────────────
+    # Numerical: StandardScaler for age
     scaler = StandardScaler()
     train_median = train_df[META_NUMERICAL].median()
 
@@ -237,7 +238,7 @@ def fit_and_encode_metadata(train_df, val_df, test_df, milk_df=None):
             df[META_NUMERICAL].fillna(train_median)
         )
 
-    # ── Categorical: OneHotEncoder for sex + anatomical site ──────────────
+    # Categorical: OneHotEncoder for sex + anatomical site 
     # Fill NaN with "unknown" so OHE doesn't break on missing values
     for df in all_dfs.values():
         for col in META_CATEGORICAL:
@@ -258,7 +259,7 @@ def fit_and_encode_metadata(train_df, val_df, test_df, milk_df=None):
     print(f"  OHE columns created: {list(ohe_cols)}")
     print(f"  Numerical columns:   {META_NUMERICAL} → age_scaled")
 
-    # ── Save encoders ─────────────────────────────────────────────────────
+    # Save encoders
     scaler_path = PROCESSED / "metadata_scaler.pkl"
     ohe_path    = PROCESSED / "metadata_ohe.pkl"
     with open(scaler_path, "wb") as f:
@@ -271,7 +272,7 @@ def fit_and_encode_metadata(train_df, val_df, test_df, milk_df=None):
     return all_dfs
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # STEP 4 — Compute class weights for weighted cross-entropy loss
 #
 #   Inverse-frequency weighting:
@@ -281,7 +282,7 @@ def fit_and_encode_metadata(train_df, val_df, test_df, milk_df=None):
 #   class (NV), preventing the model from collapsing into predicting only
 #   the most common class. Weights are plugged into CrossEntropyLoss(weight=...)
 #   when the training script is written.
-# ══════════════════════════════════════════════════════════════════════════════
+
 def compute_class_weights(train_df: pd.DataFrame) -> dict:
     print("\n[4/5] Computing inverse-frequency class weights...")
 
@@ -302,7 +303,7 @@ def compute_class_weights(train_df: pd.DataFrame) -> dict:
     return weights
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # STEP 5 — Build MILK10K external validation cohort
 #
 #   MILK10K image structure:
@@ -319,7 +320,7 @@ def compute_class_weights(train_df: pd.DataFrame) -> dict:
 #         BEN_OTH and MAL_OTH classes are excluded — no equivalent in ISIC 2019.
 #         MONET columns are retained in the CSV but not used by our MLP branch,
 #         as they have no equivalent in ISIC 2019.
-# ══════════════════════════════════════════════════════════════════════════════
+
 def build_milk10k_df() -> pd.DataFrame:
     """
     Loads the MILK10K training folder as our external validation cohort.
@@ -382,9 +383,9 @@ def build_milk10k_df() -> pd.DataFrame:
     return df
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 # MAIN
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 def main():
     print("=" * 60)
     print("  data_prep.py — One-time preprocessing pipeline")
