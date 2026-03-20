@@ -10,15 +10,17 @@ METADATA_DIM = 13
 
 
 class MetadataMLP(nn.Module):
-    """2-layer MLP for patient metadata using dropout."""
+    """2-layer MLP for patient metadata. using dropout."""
 
-    def __init__(self, input_dim=METADATA_DIM):
+    def __init__(self, input_dim=METADATA_DIM, output_dim=16):
         super().__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
         self.mlp = nn.Sequential(
             nn.Linear(input_dim, 32),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.2),
-            nn.Linear(32, 16),
+            nn.Linear(32, output_dim),
             nn.ReLU(inplace=True),
         )
 
@@ -56,7 +58,7 @@ class DenseNet121Classifier(nn.Module):
         super().__init__()
         self.use_metadata = use_metadata
 
-        # backbone
+        #backbone
         weights = models.DenseNet121_Weights.DEFAULT if pretrained else None
         backbone = models.densenet121(weights=weights)
 
@@ -70,14 +72,14 @@ class DenseNet121Classifier(nn.Module):
 
         cnn_out = backbone.classifier.in_features  # 1024
 
-        # metadata branch
+        # ── metadata branch ──────────────
         if use_metadata:
             self.meta_mlp = MetadataMLP(input_dim=metadata_dim)
-            combined_dim = cnn_out + 16  # 1024 + 16
+            combined_dim = cnn_out + self.meta_mlp.output_dim  # 1024 + 16
         else:
             combined_dim = cnn_out
 
-        #classification head 
+        # classification head
         self.classifier = nn.Linear(combined_dim, num_classes)
 
         if freeze_backbone:
@@ -100,22 +102,23 @@ class DenseNet121Classifier(nn.Module):
         x = self.pool(x).flatten(1)  # (B, 1024)
 
         if self.use_metadata:
-            assert metadata is not None, "metadata tensor required when use_metadata=True"
+            if metadata is None:
+                raise ValueError("metadata must be provided if use_metadata is True")
             m = self.meta_mlp(metadata)  # (B, 16)
             x = torch.cat([x, m], dim=1)  # (B, 1040)
 
         return self.classifier(x)
 
 
-# builder (backwards-compatible)
+# convenience builder (backwards-compatible)
 def build_densenet121(
     num_classes: int,
     pretrained: bool = True,
     freeze_backbone: bool = False,
     use_metadata: bool = False,
     metadata_dim: int = METADATA_DIM,
-) -> DenseNet121Classifier:
-    """Build a DenseNet-121 classifier with output head."""
+) -> nn.Module:
+    """Build a DenseNet-121 classifier with a project-specific output head."""
     return DenseNet121Classifier(
         num_classes=num_classes,
         pretrained=pretrained,
