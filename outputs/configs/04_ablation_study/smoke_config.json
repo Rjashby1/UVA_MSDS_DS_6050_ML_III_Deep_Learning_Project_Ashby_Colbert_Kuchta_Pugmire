@@ -1,0 +1,22 @@
+{
+  "notebook": "04_ablation_study",
+  "seed": 42,
+  "smoke_mode": true,
+  "ablation_stages": [
+    "baseline",
+    "phase1_plus_2",
+    "phase1_plus_2_plus_3",
+    "phase1_plus_2_plus_3_plus_4"
+  ],
+  "backbones": [
+    "resnet50",
+    "efficientnet_b0",
+    "densenet121"
+  ],
+  "image_size": 224,
+  "batch_size": 32,
+  "epochs": 1,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "freeze_features": false
+}
