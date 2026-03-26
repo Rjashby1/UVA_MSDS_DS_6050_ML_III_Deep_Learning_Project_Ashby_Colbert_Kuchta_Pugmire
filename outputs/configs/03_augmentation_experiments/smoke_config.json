@@ -1,0 +1,23 @@
+{
+  "notebook": "03_augmentation_experiments",
+  "run_mode": "smoke",
+  "experiment_seed": 42,
+  "smoke_mode": true,
+  "smoke_backbones": [
+    "resnet50",
+    "efficientnet_b0",
+    "densenet121"
+  ],
+  "phase_experiments": [
+    "phase2",
+    "phase3",
+    "phase4"
+  ],
+  "smoke_train_fraction": 0.125,
+  "smoke_val_fraction": 0.25,
+  "smoke_min_train_per_class": 40,
+  "smoke_min_val_per_class": 15,
+  "smoke_max_train_per_class": 250,
+  "smoke_max_val_per_class": 75,
+  "epochs": 1
+}
