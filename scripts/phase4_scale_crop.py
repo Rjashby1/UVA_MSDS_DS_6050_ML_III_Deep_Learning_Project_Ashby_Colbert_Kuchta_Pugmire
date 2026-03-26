@@ -15,18 +15,53 @@ def get_phase4_ops(
     size: int = 224,
     scale=(0.7, 1.0),
     ratio=(3 / 4, 4 / 3),
-):
-    return [
-        random_resized_crop(size=size, scale=scale, ratio=ratio)
-    ]
+) -> dict:
+    return {
+        "resized_crop": random_resized_crop(size=size, scale=scale, ratio=ratio),
+    }
 
 
-def append_phase4_ops(base_ops: list, **kwargs) -> list:
-    return list(base_ops) + get_phase4_ops(**kwargs)
+def get_phase4_block(mode: str = "all", transform_name: str | None = None, **kwargs):
+    """
+    Building the scale / crop augmentation block.
+
+    Parameters
+    ----------
+    mode : str
+        "random" to apply one randomly chosen transform,
+        "all" to apply all scale/crop transforms sequentially.
+    transform_name : str | None
+        If provided, applies only the named transform and ignores mode.
+
+    Returns
+    -------
+    torchvision transform
+        A composed transform block.
+    """
+
+    ops = get_phase4_ops(**kwargs)
+
+    if transform_name is not None:
+        if transform_name not in ops:
+            raise ValueError(f"Unknown transformation {transform_name}. Choose from {list(ops.keys())}")
+        return transforms.Compose([ops[transform_name]])
+
+    op_list = list(ops.values())
+
+    if mode == "random":
+        return transforms.RandomChoice(op_list)
+    elif mode == "all":
+        return transforms.Compose(op_list)
+    else:
+        raise ValueError("Invalid mode. Select random or all or choose a specific transformation")
+
+
+def append_phase4_block(base_ops: list, **kwargs) -> list:
+    return list(base_ops) + [get_phase4_block(**kwargs)]
 
 
 def build_phase4_transform(base_ops: list, **kwargs) -> transforms.Compose:
-    return transforms.Compose(append_phase4_ops(base_ops, **kwargs))
+    return transforms.Compose(append_phase4_block(base_ops, **kwargs))
 
 
 def _rand_bbox(size, lam):
