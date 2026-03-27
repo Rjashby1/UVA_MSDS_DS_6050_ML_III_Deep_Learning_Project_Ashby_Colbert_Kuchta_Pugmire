@@ -1,0 +1,25 @@
+{
+  "notebook": "03_augmentation_experiments",
+  "seed": 42,
+  "smoke_mode": true,
+  "smoke_checks": [
+    {
+      "backbone": "resnet50",
+      "phase": "phase2"
+    },
+    {
+      "backbone": "efficientnet_b0",
+      "phase": "phase3"
+    },
+    {
+      "backbone": "densenet121",
+      "phase": "phase4"
+    }
+  ],
+  "image_size": 224,
+  "batch_size": 32,
+  "epochs": 1,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "freeze_features": false
+}

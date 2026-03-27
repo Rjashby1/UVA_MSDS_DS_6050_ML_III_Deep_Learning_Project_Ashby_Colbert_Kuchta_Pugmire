@@ -1,3 +1,5 @@
+from typing import List
+
 from torchvision import transforms
 
 
@@ -22,7 +24,7 @@ def get_phase3_ops(
     contrast: float = 0.2,
     hue: float = 0.1,
     saturation: float = 0.2,
-):
+) -> List[transforms.ColorJitter]:
     return [
         jitter_brightness(brightness=brightness),
         jitter_contrast(contrast=contrast),
@@ -31,13 +33,16 @@ def get_phase3_ops(
     ]
 
 
-def get_phase3_random_choice(**kwargs) -> transforms.RandomChoice:
+def get_phase3_block(**kwargs) -> transforms.RandomChoice:
+    """
+    Choose exactly one color perturbation per image.
+    """
     return transforms.RandomChoice(get_phase3_ops(**kwargs))
 
 
-def append_phase3_random_choice(base_ops: list, **kwargs) -> list:
-    return list(base_ops) + [get_phase3_random_choice(**kwargs)]
+def append_phase3_block(base_ops: list, **kwargs) -> list:
+    return list(base_ops) + [get_phase3_block(**kwargs)]
 
 
 def build_phase3_transform(base_ops: list, **kwargs) -> transforms.Compose:
-    return transforms.Compose(append_phase3_random_choice(base_ops, **kwargs))
+    return transforms.Compose(append_phase3_block(base_ops, **kwargs))

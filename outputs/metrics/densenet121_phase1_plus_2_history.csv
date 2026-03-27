@@ -1,0 +1,2 @@
+epoch,epoch_seconds,train_loss,val_loss,val_balanced_accuracy,val_macro_auc
+1,50.15640091896057,1.5001229813639632,1.1941449475411925,0.471875,0.8578757144598389
