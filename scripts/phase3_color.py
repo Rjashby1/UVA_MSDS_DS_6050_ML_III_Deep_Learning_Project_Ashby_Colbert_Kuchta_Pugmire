@@ -11,7 +11,7 @@ def jitter_contrast(contrast: float = 0.2) -> transforms.ColorJitter:
     return transforms.ColorJitter(contrast=contrast)
 
 
-def jitter_hue(hue: float = 0.1) -> transforms.ColorJitter:
+def jitter_hue(hue=(0.0, 0.1)) -> transforms.ColorJitter:
     return transforms.ColorJitter(hue=hue)
 
 
@@ -22,7 +22,7 @@ def jitter_saturation(saturation: float = 0.2) -> transforms.ColorJitter:
 def get_phase3_ops(
     brightness: float = 0.2,
     contrast: float = 0.2,
-    hue: float = 0.1,
+    hue=(0.0, 0.1),
     saturation: float = 0.2,
 ) -> List[transforms.ColorJitter]:
     return [
@@ -41,7 +41,10 @@ def get_phase3_block(**kwargs) -> transforms.RandomChoice:
 
 
 def append_phase3_block(base_ops: list, **kwargs) -> list:
-    return list(base_ops) + [get_phase3_block(**kwargs)]
+    ops = list(base_ops)
+    if len(ops) < 3:
+        raise ValueError("Expected base_ops to contain at least Resize, ToTensor, and Normalize.")
+    return [ops[0], get_phase3_block(**kwargs), *ops[1:]]
 
 
 def build_phase3_transform(base_ops: list, **kwargs) -> transforms.Compose:
