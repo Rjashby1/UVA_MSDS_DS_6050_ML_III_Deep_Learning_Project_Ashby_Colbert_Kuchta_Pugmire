@@ -42,7 +42,7 @@ def get_phase3_block(**kwargs) -> transforms.RandomChoice:
 
 def append_phase3_block(base_ops: list, **kwargs) -> list:
     ops = list(base_ops)
-    if len(ops) < 3:
+    if len(ops) < 1:
         raise ValueError("Expected base_ops to contain at least Resize, ToTensor, and Normalize.")
     return [ops[0], get_phase3_block(**kwargs), *ops[1:]]
 
