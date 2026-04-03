@@ -23,7 +23,7 @@ def get_phase4_ops(
 
 def get_phase4_block(mode: str = "all", transform_name: str | None = None, **kwargs):
     """
-    Building the scale / crop augmentation block.
+    Build the scale/crop augmentation block.
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ def get_phase4_block(mode: str = "all", transform_name: str | None = None, **kwa
         "random" to apply one randomly chosen transform,
         "all" to apply all scale/crop transforms sequentially.
     transform_name : str | None
-        If provided, applies only the named transform and ignores mode.
+        If provided, apply only the named transform and ignore mode.
 
     Returns
     -------
@@ -43,20 +43,24 @@ def get_phase4_block(mode: str = "all", transform_name: str | None = None, **kwa
 
     if transform_name is not None:
         if transform_name not in ops:
-            raise ValueError(f"Unknown transformation {transform_name}. Choose from {list(ops.keys())}")
+            raise ValueError(
+                f"Unknown transformation {transform_name}. Choose from {list(ops.keys())}"
+            )
         return transforms.Compose([ops[transform_name]])
 
     op_list = list(ops.values())
 
     if mode == "random":
         return transforms.RandomChoice(op_list)
-    elif mode == "all":
+    if mode == "all":
         return transforms.Compose(op_list)
-    else:
-        raise ValueError("Invalid mode. Select random or all or choose a specific transformation")
+
+    raise ValueError("Invalid mode. Select random or all, or choose a specific transformation.")
 
 
 def append_phase4_block(base_ops: list, **kwargs) -> list:
+    if not isinstance(base_ops, list):
+        raise TypeError("base_ops must be a list of torchvision transforms")
     return list(base_ops) + [get_phase4_block(**kwargs)]
 
 

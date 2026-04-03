@@ -87,7 +87,10 @@ def get_phase2_block(mode: str = "compose", transform_name: str | None = None, *
 
 
 def append_phase2_block(base_ops: list, **kwargs) -> list:
-    return list(base_ops) + [get_phase2_block(**kwargs)]
+    ops = list(base_ops)
+    if len(ops) < 3:
+        raise ValueError("Expected base_ops to contain at least Resize, ToTensor, and Normalize.")
+    return [ops[0], get_phase2_block(**kwargs), *ops[1:]]
 
 
 def build_phase2_transform(base_ops: list, **kwargs) -> transforms.Compose:
