@@ -19,6 +19,8 @@
   "learning_rate": 0.0001,
   "weight_decay": 0.0001,
   "freeze_features": false,
+  "save_checkpoints": true,
+  "num_workers": 0,
   "run_full_experiment": true,
   "full_run_epochs": 5,
   "train_rows": 21531,
