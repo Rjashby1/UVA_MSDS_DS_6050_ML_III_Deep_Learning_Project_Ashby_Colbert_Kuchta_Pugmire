@@ -1,2 +1,2 @@
-epoch,epoch_seconds,train_loss,val_loss,val_balanced_accuracy,val_macro_auc
-1,35.20014500617981,1.4907528070599154,1.1600750011483623,0.5052604166666667,0.8656804724664162
+epoch,epoch_seconds,train_loss,val_loss,val_balanced_accuracy,val_macro_auc,backbone,stage,epochs_requested
+1,31.765884399414062,1.4914761004282449,1.1997771226062677,0.45635416666666667,0.8615050990032946,densenet121,phase1_plus_2,1
