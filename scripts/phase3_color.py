@@ -24,7 +24,7 @@ def get_phase3_ops(
     contrast: float = 0.2,
     hue=(0.0, 0.1),
     saturation: float = 0.2,
-) -> List[transforms.ColorJitter]:
+) -> List:
     return [
         jitter_brightness(brightness=brightness),
         jitter_contrast(contrast=contrast),
@@ -43,7 +43,7 @@ def get_phase3_block(**kwargs) -> transforms.RandomChoice:
 def append_phase3_block(base_ops: list, **kwargs) -> list:
     ops = list(base_ops)
     if len(ops) < 1:
-        raise ValueError("Expected base_ops to contain at least Resize, ToTensor, and Normalize.")
+        raise ValueError("base_ops must contain at least one transform.")
     return [ops[0], get_phase3_block(**kwargs), *ops[1:]]
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torchvision import transforms
+from typing import List
 
 
 def random_resized_crop(
@@ -15,58 +16,24 @@ def get_phase4_ops(
     size: int = 224,
     scale=(0.7, 1.0),
     ratio=(3 / 4, 4 / 3),
-) -> dict:
-    return {
-        "resized_crop": random_resized_crop(size=size, scale=scale, ratio=ratio),
-    }
+) -> List:
+    return[random_resized_crop(size=size, scale=scale, ratio=ratio)]
 
 
-def get_phase4_block(mode: str = "all", transform_name: str | None = None, **kwargs):
+def get_phase4_block(**kwargs):
     """
-    Build the scale/crop augmentation block.
-
-    Parameters
-    ----------
-    mode : str
-        "random" to apply one randomly chosen transform,
-        "all" to apply all scale/crop transforms sequentially.
-    transform_name : str | None
-        If provided, apply only the named transform and ignore mode.
-
-    Returns
-    -------
-    torchvision transform
-        A composed transform block.
+    Choose exactly one scale/crop transformation per image.
     """
-
-    ops = get_phase4_ops(**kwargs)
-
-    if transform_name is not None:
-        if transform_name not in ops:
-            raise ValueError(
-                f"Unknown transformation {transform_name}. Choose from {list(ops.keys())}"
-            )
-        return transforms.Compose([ops[transform_name]])
-
-    op_list = list(ops.values())
-
-    if mode == "random":
-        return transforms.RandomChoice(op_list)
-    if mode == "all":
-        return transforms.Compose(op_list)
-
-    raise ValueError("Invalid mode. Select random or all, or choose a specific transformation.")
-
+    return transforms.RandomChoice(get_phase4_ops(**kwargs))
 
 def append_phase4_block(base_ops: list, **kwargs) -> list:
-    if not isinstance(base_ops, list):
-        raise TypeError("base_ops must be a list of torchvision transforms")
-    return list(base_ops) + [get_phase4_block(**kwargs)]
-
+    ops = list(base_ops)
+    if len(ops) < 1:
+        raise ValueError("base_ops must contain at least one transform.")
+    return [ops[0], get_phase4_block(**kwargs), *ops[1:]]
 
 def build_phase4_transform(base_ops: list, **kwargs) -> transforms.Compose:
     return transforms.Compose(append_phase4_block(base_ops, **kwargs))
-
 
 def _rand_bbox(size, lam):
     _, _, h, w = size
