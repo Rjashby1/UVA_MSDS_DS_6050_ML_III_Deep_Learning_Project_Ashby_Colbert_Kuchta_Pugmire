@@ -1,0 +1,31 @@
+{
+  "notebook": "06_external_evaluation",
+  "seed": 42,
+  "smoke_mode": true,
+  "initial_external_only": true,
+  "primary_stage": "phase1_plus_2_plus_3_plus_4",
+  "ablation_stages": [
+    "baseline",
+    "phase1_plus_2",
+    "phase1_plus_2_plus_3",
+    "phase1_plus_2_plus_3_plus_4"
+  ],
+  "backbones": [
+    "resnet50",
+    "efficientnet_b0",
+    "densenet121"
+  ],
+  "backbones_to_run": [
+    "resnet50",
+    "efficientnet_b0",
+    "densenet121"
+  ],
+  "smoke_lesions_per_supported_class": 40,
+  "image_size": 224,
+  "batch_size": 32,
+  "num_workers": 0,
+  "save_predictions": true,
+  "save_figures": true,
+  "save_reports": true,
+  "save_summary_tables": true
+}
