@@ -1,0 +1,16 @@
+{
+  "notebook": "06_external_evaluation",
+  "mode": "full",
+  "initial_external_only": true,
+  "primary_stage": "phase1_plus_2_plus_3_plus_4",
+  "backbones_to_run": [
+    "resnet50",
+    "efficientnet_b0",
+    "densenet121"
+  ],
+  "n_eval_lesions": 5137,
+  "n_eval_images": 10274,
+  "batch_size": 32,
+  "image_size": 224,
+  "seed": 42
+}

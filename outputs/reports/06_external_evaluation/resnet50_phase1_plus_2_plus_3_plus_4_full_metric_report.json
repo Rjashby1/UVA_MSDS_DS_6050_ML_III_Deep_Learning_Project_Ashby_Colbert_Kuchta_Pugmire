@@ -2,73 +2,8 @@
   "backbone": "resnet50",
   "stage": "phase1_plus_2_plus_3_plus_4",
   "checkpoint_path": "/sfs/gpfs/tardis/home/gsr3qz/UVA_MSDS_DS_6050_ML_III_Deep_Learning_Project_Ashby_Colbert_Kuchta_Pugmire/outputs/checkpoints/resnet50_phase1_plus_2_plus_3_plus_4_best.pt",
-  "image_metrics": {
-    "macro_auc": 0.7941965900510461,
-    "balanced_accuracy": 0.442909466900784,
-    "classification_report": {
-      "AK": {
-        "precision": 0.12334801762114538,
-        "recall": 0.23102310231023102,
-        "f1-score": 0.16082711085582999,
-        "support": 606.0
-      },
-      "BCC": {
-        "precision": 0.8401702786377709,
-        "recall": 0.43041237113402064,
-        "f1-score": 0.5692186680650236,
-        "support": 5044.0
-      },
-      "BKL": {
-        "precision": 0.2296099290780142,
-        "recall": 0.47610294117647056,
-        "f1-score": 0.30980861244019137,
-        "support": 1088.0
-      },
-      "DF": {
-        "precision": 0.30833333333333335,
-        "recall": 0.3557692307692308,
-        "f1-score": 0.33035714285714285,
-        "support": 104.0
-      },
-      "MEL": {
-        "precision": 0.46563814866760167,
-        "recall": 0.3688888888888889,
-        "f1-score": 0.4116553006819591,
-        "support": 900.0
-      },
-      "NV": {
-        "precision": 0.43990384615384615,
-        "recall": 0.8585790884718498,
-        "f1-score": 0.5817438692098093,
-        "support": 1492.0
-      },
-      "SCC": {
-        "precision": 0.28693790149892934,
-        "recall": 0.1416490486257928,
-        "f1-score": 0.18966737438075018,
-        "support": 946.0
-      },
-      "VASC": {
-        "precision": 0.735632183908046,
-        "recall": 0.6808510638297872,
-        "f1-score": 0.7071823204419889,
-        "support": 94.0
-      },
-      "accuracy": 0.4552267860619038,
-      "macro avg": {
-        "precision": 0.42869670486233585,
-        "recall": 0.442909466900784,
-        "f1-score": 0.4075575498665869,
-        "support": 10274.0
-      },
-      "weighted avg": {
-        "precision": 0.5850159242747323,
-        "recall": 0.4552267860619038,
-        "f1-score": 0.469571851455248,
-        "support": 10274.0
-      }
-    }
-  },
+  "n_images": 10274,
+  "n_lesions": 5137,
   "lesion_metrics": {
     "macro_auc": 0.8543231080921233,
     "balanced_accuracy": 0.5264961328342829,
@@ -143,5 +78,8 @@
   "generalization_gap": {
     "macro_auc_gap": 0.11361267216397575,
     "balanced_accuracy_gap": 0.28437934836058343
+  },
+  "runtime": {
+    "inference_elapsed_hms": "2:17"
   }
 }
