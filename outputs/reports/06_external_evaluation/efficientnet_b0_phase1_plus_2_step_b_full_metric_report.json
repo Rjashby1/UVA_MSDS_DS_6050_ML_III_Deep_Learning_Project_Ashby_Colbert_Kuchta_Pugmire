@@ -90,6 +90,6 @@
     "balanced_accuracy_gap": 0.2523580874353819
   },
   "runtime": {
-    "inference_elapsed_hms": "0:44"
+    "inference_elapsed_hms": "0:42"
   }
 }

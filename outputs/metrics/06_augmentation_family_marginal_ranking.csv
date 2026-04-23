@@ -1,0 +1,10 @@
+backbone,stage,phase_added,delta_milk_lesion_bacc_from_prev,delta_isic_val_bacc_from_prev,bacc_gap_narrowing_from_prev
+efficientnet_b0,phase1_plus_2,"Phase 2, geometric",0.3007053380724401,0.0391170444481102,0.2615882936243299
+densenet121,phase1_plus_2,"Phase 2, geometric",0.2579219914667525,0.0286936536572085,0.229228337809544
+resnet50,phase1_plus_2,"Phase 2, geometric",0.2459886789948145,0.0362780551592969,0.2097106238355176
+densenet121,phase1_plus_2_plus_3_plus_4,"Phase 4, scale/crop/mixing",0.0624079716196998,0.0253761303076818,0.037031841312018
+resnet50,phase1_plus_2_plus_3,"Phase 3, color",0.03835640868639,0.0146658743164564,0.0236905343699335
+efficientnet_b0,phase1_plus_2_plus_3_plus_4,"Phase 4, scale/crop/mixing",0.0220357702800081,0.0278494753966165,-0.0058137051166083
+efficientnet_b0,phase1_plus_2_plus_3,"Phase 3, color",-0.0157137050191286,-0.0183438432812688,0.0026301382621402
+resnet50,phase1_plus_2_plus_3_plus_4,"Phase 4, scale/crop/mixing",-0.0215208541275978,0.0173021503043785,-0.0388230044319763
+densenet121,phase1_plus_2_plus_3,"Phase 3, color",-0.0377684691704587,0.0205623325525418,-0.0583308017230005

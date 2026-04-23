@@ -1,0 +1,4 @@
+backbone,best_external_stage,best_external_milk_lesion_bacc,best_external_milk_lesion_macro_auc,best_external_bacc_gap,final_stage_milk_lesion_bacc,final_stage_minus_best_external_bacc
+densenet121,phase1_plus_2_plus_3_plus_4,0.5603778674182103,0.8521722830131757,0.245384882785739,0.5603778674182103,0.0
+efficientnet_b0,phase1_plus_2_plus_3_plus_4,0.5684715929301601,0.8799066259048001,0.2555416542898501,0.5684715929301601,0.0
+resnet50,phase1_plus_2_plus_3,0.5480169869618807,0.865532007641101,0.245556343928607,0.5264961328342829,-0.021520854127597855
