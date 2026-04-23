@@ -7,6 +7,16 @@
   "lesion_metrics": {
     "macro_auc": 0.8543231080921233,
     "balanced_accuracy": 0.5264961328342829,
+    "per_class_auc": {
+      "AK": 0.7112088329230111,
+      "BCC": 0.8765437003319166,
+      "BKL": 0.7645149748338262,
+      "DF": 0.9026170486347477,
+      "MEL": 0.892396937154778,
+      "NV": 0.9525827567111133,
+      "SCC": 0.7459357627493572,
+      "VASC": 0.988784851398236
+    },
     "classification_report": {
       "AK": {
         "precision": 0.14602587800369685,
@@ -80,6 +90,6 @@
     "balanced_accuracy_gap": 0.28437934836058343
   },
   "runtime": {
-    "inference_elapsed_hms": "2:16"
+    "inference_elapsed_hms": "0:44"
   }
 }
