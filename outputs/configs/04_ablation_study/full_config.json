@@ -22,6 +22,8 @@
   "save_checkpoints": true,
   "num_workers": 0,
   "run_full_experiment": true,
+  "augmentation_mode": "on_the_fly_cumulative_transform",
+  "dataset_expansion": false,
   "full_run_epochs": 5,
   "train_rows": 21531,
   "val_rows": 3800
