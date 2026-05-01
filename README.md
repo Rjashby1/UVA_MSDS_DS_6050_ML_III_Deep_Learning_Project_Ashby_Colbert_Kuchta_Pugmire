@@ -28,7 +28,7 @@ The final image-only experiment includes 12 primary runs:
 3 CNN backbones x 4 cumulative augmentation stages = 12 runs
 ```
 
-Metadata fusion was considered as a conditional extension, but it was not included in the final external evaluation matrix because compatible metadata use across ISIC 2019 and MILK10k requires a separate audit.
+Metadata fusion was studied and showed minimal performance gains in this application.
 
 ---
 
@@ -153,7 +153,7 @@ The project is notebook-led. The main workflow is:
 | `02_baseline_modeling.ipynb` | Phase 1 baseline training across three CNN backbones | Complete |
 | `03_augmentation_experiments.ipynb` | Augmentation smoke tests and transform verification | Complete |
 | `04_ablation_study.ipynb` | Full 12-run cumulative augmentation ablation on ISIC 2019 | Complete |
-| `05_metadata_fusion_optional.ipynb` | Optional metadata-fusion exploration | Conditional, not part of final external result matrix |
+| `05_metadata_fusion_optional.ipynb` | Metadata-fusion exploration | Complete |
 | `06_external_evaluation.ipynb` | MILK10k external evaluation of trained checkpoints | Complete |
 | `07_results_synthesis.ipynb` | Final result aggregation, table generation, and report-ready figures | Complete |
 
@@ -162,8 +162,6 @@ Recommended review order:
 ```text
 00 -> 01 -> 02 -> 03 -> 04 -> 06 -> 07
 ```
-
-Notebook 05 is optional and should be interpreted as future-work support unless metadata compatibility is formally resolved.
 
 ---
 
