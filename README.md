@@ -153,14 +153,14 @@ The project is notebook-led. The main workflow is:
 | `02_baseline_modeling.ipynb` | Phase 1 baseline training across three CNN backbones | Complete |
 | `03_augmentation_experiments.ipynb` | Augmentation smoke tests and transform verification | Complete |
 | `04_ablation_study.ipynb` | Full 12-run cumulative augmentation ablation on ISIC 2019 | Complete |
-| `05_metadata_fusion_optional.ipynb` | Metadata Late Fusion exploration | Complete |
+| `05_metadata_fusion_optional.ipynb` | Late-fusion metadata branch exploration | Complete |
 | `06_external_evaluation.ipynb` | MILK10k external evaluation of trained checkpoints | Complete |
 | `07_results_synthesis.ipynb` | Final result aggregation, table generation, and report-ready figures | Complete |
 
 Recommended review order:
 
 ```text
-00 -> 01 -> 02 -> 03 -> 04 -> 06 -> 07
+00 -> 01 -> 02 -> 03 -> 04 -> 06 -> 07 -> 05
 ```
 
 ---
