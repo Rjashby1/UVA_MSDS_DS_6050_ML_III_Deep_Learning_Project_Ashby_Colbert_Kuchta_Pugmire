@@ -55,7 +55,7 @@ Do augmentation gains persist under cross-dataset distribution shift from ISIC 2
 **RQ3, Metadata contribution**  
 If compatible metadata fields are available across datasets, can late-fusion metadata provide additional predictive value beyond image-only learning?
 
-In the final project, RQ1 and RQ2 are answered through the 12-run image-only augmentation study. RQ3 is treated as future work because metadata compatibility across ISIC 2019 and MILK10k was not finalized for the external evaluation protocol.
+In the final project, RQ1 and RQ2 are answered through the 12-run image-only augmentation study.  RQ3 is addressed through a metadata fusion experiment using EfficientNet-B0, which showed marginal gains only at an increased epoch budget and was excluded from the external evaluation.
 
 ---
 
@@ -153,7 +153,7 @@ The project is notebook-led. The main workflow is:
 | `02_baseline_modeling.ipynb` | Phase 1 baseline training across three CNN backbones | Complete |
 | `03_augmentation_experiments.ipynb` | Augmentation smoke tests and transform verification | Complete |
 | `04_ablation_study.ipynb` | Full 12-run cumulative augmentation ablation on ISIC 2019 | Complete |
-| `05_metadata_fusion_optional.ipynb` | Metadata-fusion exploration | Complete |
+| `05_metadata_fusion_optional.ipynb` | Metadata Late Fusion exploration | Complete |
 | `06_external_evaluation.ipynb` | MILK10k external evaluation of trained checkpoints | Complete |
 | `07_results_synthesis.ipynb` | Final result aggregation, table generation, and report-ready figures | Complete |
 
